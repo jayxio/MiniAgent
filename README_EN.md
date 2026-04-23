@@ -271,6 +271,32 @@ miniagent --pack examples.miniagent_demo_pack --skill demo_operator --tool demo_
 
 If MiniAgent has to apply implicit behavior, such as falling back to a skill whitelist or filtering tools requested by a profile, it prints bootstrap warnings at startup instead of doing it silently.
 
+### Export to Codex / Claude Code / OpenCode Skills
+
+MiniAgent keeps the native Python pack format for runtime use. When you want to reuse the same pack in the broader Agent Skills ecosystem, export a compatibility layout directly from the CLI:
+
+```bash
+miniagent --export-pack langfuse_security_pack --export-dir ./agent-skills-export
+miniagent --export-pack examples.miniagent_demo_pack --export-framework codex --export-dir ./agent-skills-export
+```
+
+By default this creates:
+
+```text
+agent-skills-export/
+├── .agents/skills/     # Codex
+├── .claude/skills/     # Claude Code
+└── .opencode/skills/   # OpenCode
+```
+
+Each exported skill contains:
+
+- `SKILL.md`: shared YAML frontmatter + Markdown body for mainstream Agent Skills loaders
+- `agents/openai.yaml`: Codex-specific UI metadata
+
+The exporter translates MiniAgent `Skill.prompt`, tool whitelists, and temperature hints into portable instructions.  
+If a skill depends on pack-local Python tools, the CLI prints an explicit warning so you can map those capabilities to MCP, native tools, or shell/Python fallbacks in the target framework.
+
 ## Custom Tools
 
 ```python

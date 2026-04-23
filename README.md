@@ -403,6 +403,32 @@ miniagent --pack examples.miniagent_demo_pack --skill demo_operator --tool demo_
 
 如果系统发生隐式行为，比如 “未显式配置 tools，回退到 skill 白名单” 或 “skill 过滤掉了 profile 请求的 tool”，启动时会直接打印 bootstrap warnings，不会静默处理。
 
+### 导出为 Codex / Claude Code / OpenCode Skills
+
+MiniAgent 原生 pack 继续使用 Python 模块格式；如果你想把同一个 pack 迁移到主流 Agent Skills 生态，可以直接导出兼容目录：
+
+```bash
+miniagent --export-pack langfuse_security_pack --export-dir ./agent-skills-export
+miniagent --export-pack examples.miniagent_demo_pack --export-framework codex --export-dir ./agent-skills-export
+```
+
+默认会在输出目录下生成：
+
+```text
+agent-skills-export/
+├── .agents/skills/     # Codex
+├── .claude/skills/     # Claude Code
+└── .opencode/skills/   # OpenCode
+```
+
+每个技能目录会生成：
+
+- `SKILL.md`：使用通用 YAML Frontmatter + Markdown 正文，兼容主流 Agent Skills 入口格式
+- `agents/openai.yaml`：补充 Codex 的 UI 元数据
+
+导出时会把 MiniAgent `Skill.prompt`、工具白名单、temperature 等信息转成跨框架说明。  
+如果 skill 依赖 pack 内自定义 Python tool，CLI 会明确给出 warning；这类 tool 仍需要你在目标框架里手动映射成 MCP、内置工具或 shell/Python fallback。
+
 ## 自定义工具
 
 ```python

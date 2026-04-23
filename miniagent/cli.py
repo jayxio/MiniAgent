@@ -390,6 +390,40 @@ def _build_agent(args: argparse.Namespace) -> tuple[MiniAgent, Memory, Any, bool
     return agent, memory, resolved.report, cfg.strict_resolution
 
 
+def _export_packs(args: argparse.Namespace) -> int:
+    """Export one or more MiniAgent packs to Agent Skills layouts."""
+
+    from .skill_export import export_packs_to_agent_skills
+
+    export_dir = args.export_dir or "agent-skills-export"
+    frameworks = args.export_framework or ["all"]
+
+    try:
+        results = export_packs_to_agent_skills(
+            args.export_pack,
+            output_dir=export_dir,
+            frameworks=frameworks,
+        )
+    except Exception as exc:
+        console.print(f"[red]error:[/red] {exc}")
+        return 1
+
+    console.print(f"[bold]Exported Agent Skills[/bold] -> {results[0].output_root}")
+    for result in results:
+        console.print(
+            f"  [cyan]{result.pack_name}[/cyan] ({result.spec}) -> "
+            f"{len(result.skills)} skill(s), frameworks: {', '.join(result.frameworks)}"
+        )
+        for skill in result.skills:
+            console.print(
+                f"    [green]{skill.source_name}[/green] -> [bold]{skill.exported_name}[/bold]"
+            )
+        for warning in result.warnings:
+            console.print(f"    [yellow]warning:[/yellow] {warning}")
+
+    return 0
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     """Entry point for the ``miniagent`` CLI.
     
@@ -410,7 +444,18 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--tool", action="append", help="Explicitly enable a tool")
     parser.add_argument("--control-http", help="Enable the local HTTP control plane on [HOST:]PORT")
     parser.add_argument("--strict-resolution", action="store_true", help="Fail startup when bootstrap diagnostics contain errors")
+    parser.add_argument("--export-pack", action="append", help="Export one or more MiniAgent packs as Agent Skills directories")
+    parser.add_argument(
+        "--export-framework",
+        action="append",
+        choices=["all", "codex", "claude", "claude-code", "opencode"],
+        help="Select export targets for --export-pack (default: all)",
+    )
+    parser.add_argument("--export-dir", help="Output directory for exported Agent Skills (default: ./agent-skills-export)")
     args = parser.parse_args(argv)
+
+    if args.export_pack:
+        return _export_packs(args)
 
     try:
         agent, memory, bootstrap_report, strict_mode = _build_agent(args)

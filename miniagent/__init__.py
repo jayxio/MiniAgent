@@ -19,6 +19,8 @@ __all__ = [
     "Orchestrator",
     "load_pack",
     "load_packs",
+    "export_pack_to_agent_skills",
+    "export_packs_to_agent_skills",
     "resolve_runtime",
     "RuntimeOverride",
     "load_mcp_tools",
@@ -41,6 +43,12 @@ def __getattr__(name: str) -> Any:
     if name == "load_packs":
         from .pack_loader import load_packs
         return load_packs
+    if name == "export_pack_to_agent_skills":
+        from .skill_export import export_pack_to_agent_skills
+        return export_pack_to_agent_skills
+    if name == "export_packs_to_agent_skills":
+        from .skill_export import export_packs_to_agent_skills
+        return export_packs_to_agent_skills
     if name == "load_mcp_tools":
         from .mcp_client import load_mcp_tools
         return load_mcp_tools
